@@ -7,6 +7,9 @@ mx.device_info() when the extension predates the NAX split. Import from here
 in patches that are not Qwen-specific.
 """
 
-from omlx.custom_kernels.qwen35_prefill.fast import is_nax_available
+from omlx.custom_kernels.qwen35_prefill.fast import (
+    has_nax_hardware,
+    is_nax_available,
+)
 
-__all__ = ["is_nax_available"]
+__all__ = ["has_nax_hardware", "is_nax_available"]

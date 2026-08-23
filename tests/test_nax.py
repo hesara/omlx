@@ -8,7 +8,7 @@ import types
 import pytest
 
 import omlx.custom_kernels.qwen35_prefill.fast as fast
-from omlx.custom_kernels.nax import is_nax_available
+from omlx.custom_kernels.nax import has_nax_hardware, is_nax_available
 
 
 @pytest.fixture(autouse=True)
@@ -45,6 +45,20 @@ def test_is_nax_available_env_override(monkeypatch):
     assert fast.is_nax_available() is True
     monkeypatch.setenv("OMLX_NAX", "0")
     assert fast.is_nax_available() is False
+
+
+def test_has_nax_hardware_ignores_dispatch_override(monkeypatch):
+    monkeypatch.setattr(fast, "_EXT_HAS_NAX", False)
+    monkeypatch.setattr(fast, "_nax_available_fallback", lambda: True)
+    monkeypatch.setenv("OMLX_NAX", "0")
+    assert has_nax_hardware() is True
+
+
+def test_has_nax_hardware_uses_native_probe(monkeypatch):
+    fake_ext = types.SimpleNamespace(is_nax_available=lambda: True)
+    monkeypatch.setattr(fast, "_ext", fake_ext)
+    monkeypatch.setattr(fast, "_EXT_HAS_NAX", True)
+    assert has_nax_hardware() is True
 
 
 def test_is_nax_available_uses_fallback_without_ext(monkeypatch):
@@ -87,6 +101,7 @@ def test_stock_mlx_probe_finds_needle_across_chunks(tmp_path, monkeypatch):
 
 def test_nax_shim_reexports_fast_impl():
     assert is_nax_available is fast.is_nax_available
+    assert has_nax_hardware is fast.has_nax_hardware
 
 
 def test_qmm_nax_kwargs_empty_for_pre_nax_ext(monkeypatch):

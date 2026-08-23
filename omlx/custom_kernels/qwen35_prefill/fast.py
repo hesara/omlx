@@ -878,6 +878,18 @@ def _stock_mlx_has_nax(lib_path: Path | None = None) -> bool:
     return found
 
 
+def has_nax_hardware() -> bool:
+    """True when the host platform exposes M5-generation NAX hardware.
+
+    Unlike ``is_nax_available()``, this does not depend on the installed MLX
+    metallib or the testing-only ``OMLX_NAX`` dispatch override. Use it for
+    hardware policy rather than kernel routing.
+    """
+    if _EXT_HAS_NAX:
+        return bool(_ext.is_nax_available())
+    return _nax_available_fallback()
+
+
 def is_nax_available() -> bool:
     """True when stock MLX will dispatch to the M5 tensor-unit (NAX) kernels.
 
